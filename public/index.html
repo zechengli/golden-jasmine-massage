@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Golden Jasmine Massage - Book Appointment</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background: #f8f6f3;
+      color: #333;
+    }
+    header {
+      background: #d4a574;
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    header h1 { margin: 0; font-size: 2.2em; }
+    header p { margin: 8px 0 0; font-size: 1.1em; }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .card h2 { margin-top: 0; color: #7a5c3c; }
+    label {
+      display: block;
+      margin: 15px 0 6px;
+      font-weight: 600;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+    .price-tag {
+      font-size: 1.3em;
+      color: #2e7d32;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+    .slots {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .slot {
+      padding: 12px;
+      text-align: center;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      background: white;
+      font-size: 0.95em;
+    }
+    .slot:hover:not(.full) { border-color: #d4a574; }
+    .slot.selected { border-color: #d4a574; background: #fff8f0; }
+    .slot.full { background: #eee; color: #999; cursor: not-allowed; }
+    button {
+      width: 100%;
+      padding: 15px;
+      background: #7a5c3c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1em;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover { background: #5e4530; }
+    button:disabled { background: #aaa; cursor: not-allowed; }
+    .message {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+    }
+    .message.success { background: #d4edda; color: #155724; display: block; }
+    .message.error { background: #f8d7da; color: #721c24; display: block; }
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Golden Jasmine Massage</h1>
+    <p>233N 48th Street Suite T, Lincoln, NE 68504</p>
+    <p>Open daily 8:00 AM - 8:00 PM</p>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h2>Prices</h2>
+      <p>30 min: $40 &nbsp;|&nbsp; 45 min: $50 &nbsp;|&nbsp; 60 min: $60</p>
+      <p>90 min: $90 &nbsp;|&nbsp; 120 min: $120</p>
+      <p>Foot Massage and Reflexology same price. Hot Stone +$10 on all services.</p>
+    </div>
+
+    <form id="bookingForm" class="card">
+      <h2>Book Your Appointment</h2>
+
+      <label for="name">Your Name</label>
+      <input type="text" id="name" name="name" required>
+
+      <label for="phone">Phone Number</label>
+      <input type="tel" id="phone" name="phone" required>
+
+      <label for="service">Service</label>
+      <select id="service" name="service" required>
+        <option value="Massage">Massage</option>
+        <option value="Foot Massage">Foot Massage</option>
+        <option value="Reflexology">Reflexology</option>
+        <option value="Hot Stone Massage">Hot Stone Massage (+$10)</option>
+      </select>
+
+      <label for="duration">Duration</label>
+      <select id="duration" name="duration" required>
+        <option value="30">30 min - $40</option>
+        <option value="45">45 min - $50</option>
+        <option value="60" selected>60 min - $60</option>
+        <option value="90">90 min - $90</option>
+        <option value="120">120 min - $120</option>
+      </select>
+
+      <div class="price-tag">Total: $<span id="price">60</span></div>
+
+      <label for="date">Date</label>
+      <input type="date" id="date" name="date" required>
+
+      <label>Available Time Slots (2 therapists per slot)</label>
+      <div id="slots" class="slots">
+        <p style="grid-column: 1/-1; color:#777;">Please select a date first.</p>
+      </div>
+      <input type="hidden" id="time" name="time" required>
+
+      <button type="submit" id="submitBtn">Book Appointment</button>
+      <div id="message" class="message"></div>
+    </form>
+  </div>
+
+  <footer>
+    <p>Walk-ins welcome. Call us for same-day appointments.</p>
+  </footer>
+
+  <script>
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+    document.getElementById('date').min = today;
+
+    const prices = { 30: 40, 45: 50, 60: 60, 90: 90, 120: 120 };
+
+    function updatePrice() {
+      const duration = parseInt(document.getElementById('duration').value);
+      const service = document.getElementById('service').value;
+      let price = prices[duration];
+      if (service === 'Hot Stone Massage') price += 10;
+      document.getElementById('price').textContent = price;
+    }
+
+    document.getElementById('service').addEventListener('change', updatePrice);
+    document.getElementById('duration').addEventListener('change', updatePrice);
+
+    async function loadSlots() {
+      const date = document.getElementById('date').value;
+      if (!date) return;
+      const res = await fetch(`/api/slots?date=${date}`);
+      const slots = await res.json();
+      const container = document.getElementById('slots');
+      container.innerHTML = '';
+      slots.forEach(slot => {
+        const div = document.createElement('div');
+        div.className = 'slot' + (slot.full ? ' full' : '');
+        div.textContent = slot.time;
+        if (!slot.full) {
+          div.addEventListener('click', () => {
+            document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+            div.classList.add('selected');
+            document.getElementById('time').value = slot.time;
+          });
+        } else {
+          div.title = 'Fully booked';
+        }
+        container.appendChild(div);
+      });
+    }
+
+    document.getElementById('date').addEventListener('change', loadSlots);
+    loadSlots();
+
+    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('message');
+      const btn = document.getElementById('submitBtn');
+      msg.className = 'message';
+      msg.style.display = 'none';
+
+      const time = document.getElementById('time').value;
+      if (!time) {
+        msg.textContent = 'Please select a time slot.';
+        msg.className = 'message error';
+        return;
+      }
+
+      const formData = {
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        service: document.getElementById('service').value,
+        duration: parseInt(document.getElementById('duration').value),
+        date: document.getElementById('date').value,
+        time: time
+      };
+
+      btn.disabled = true;
+      const res = await fetch('/api/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+      btn.disabled = false;
+
+      if (data.success) {
+        msg.textContent = `Booking confirmed! Total: $${data.price}. See you soon!`;
+        msg.className = 'message success';
+        document.getElementById('bookingForm').reset();
+        document.getElementById('date').value = today;
+        document.getElementById('price').textContent = '60';
+        document.getElementById('time').value = '';
+        loadSlots();
+      } else {
+        msg.textContent = data.error || 'Booking failed. Please try again.';
+        msg.className = 'message error';
+      }
+    });
+  </script>
+</body>
+</html>
