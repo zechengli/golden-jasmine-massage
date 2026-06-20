@@ -4,7 +4,7 @@ const Database = require('better-sqlite3');
 const bodyParser = require('body-parser');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const db = new Database(path.join(__dirname, 'appointments.db'));
 
 app.use(bodyParser.urlencoded({ extended: true }));
